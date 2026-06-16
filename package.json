@@ -1,0 +1,12 @@
+{
+  "name": "the-compass",
+  "version": "1.0.0",
+  "description": "An entrepreneurial north star for solo founders: roadmap with stage-gates (**The Horizon**), a Top-3 daily focus dashboard (**Daily Alignment**), an automated advisory engine (**The Advisory Matrix**), and a business-asset vault (**Executive Vault**).",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
