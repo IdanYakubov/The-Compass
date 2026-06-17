@@ -7,9 +7,8 @@ import type { VentureStage } from "@/lib/types";
  * recently-discharged soldiers, people stuck or between things, and anyone
  * finding their next path. The intro chat captures the person's situation,
  * where they are, their biggest obstacle, and their 30-day goal, then tailors
- * the app to them. `deriveUnlocks` maps the answers onto the stage-gate keys the
- * rest of the app understands. Shaped so a real backend/LLM can replace the
- * internals without touching the UI, like features/advisory/advisor.ts.
+ * the app to them. Shaped so a real backend/LLM can replace the internals
+ * without touching the UI, like features/advisory/advisor.ts.
  */
 
 /** Who the person is — drives tone, journaling prompts, and framing. */
@@ -89,31 +88,12 @@ export const ONBOARDING_QUESTIONS: [
   },
 ];
 
-/** Gate keys a person is assumed to have already cleared, by where they are. */
-const GATES_BY_STAGE: Record<VentureStage, string[]> = {
-  Ideation: [],
-  Validation: [],
-  Mvp: ["validation_done"],
-  Traction: ["validation_done", "mvp_shipped"],
-  Growth: ["validation_done", "mvp_shipped", "first_10_users"],
-};
-
-export interface DerivedUnlocks {
-  stage: VentureStage;
-  unlockedGateKeys: string[];
-}
-
 /**
- * Rules-based unlock derivation. Someone who reports being further along has,
- * by definition, already passed the earlier gates — so we open those features
- * up front instead of making them re-earn each milestone.
+ * NOTE: onboarding no longer grants feature-gate access. Self-reported stage is
+ * used only to personalize and to label the current stage on the dashboard;
+ * gated modules are unlocked solely by real milestone progress on the backend
+ * (GET /ventures/{id}/unlocks). See features/auth/AuthContext.tsx (issue #5).
  */
-export function deriveUnlocks(answers: OnboardingAnswers): DerivedUnlocks {
-  return {
-    stage: answers.stage,
-    unlockedGateKeys: GATES_BY_STAGE[answers.stage] ?? [],
-  };
-}
 
 /** One-line, personalized framing for the dashboard, by situation + obstacle. */
 export function personalizedFocus(a: OnboardingAnswers): string {

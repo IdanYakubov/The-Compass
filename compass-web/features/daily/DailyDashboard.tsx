@@ -33,8 +33,8 @@ export function DailyDashboard() {
   const today = useToday(venture.data?.id);
   const unlocks = useUnlocks(venture.data?.id);
   const completeTask = useCompleteTask(venture.data?.id);
-  // Onboarding answers drive personalization + the founder's starting unlocks.
-  const { onboarding, unlockedGateKeys: onboardingGates } = useAuth();
+  // Onboarding answers drive personalization + the dashboard's stage label only.
+  const { onboarding } = useAuth();
 
   if (venture.isLoading || today.isLoading) {
     return <p className="text-sm text-muted-foreground">Aligning your day…</p>;
@@ -51,8 +51,10 @@ export function DailyDashboard() {
 
   if (!today.data) return null;
   const t = today.data;
-  // Gates opened by real milestone progress (backend) ∪ those granted at onboarding.
-  const openGates = [...(unlocks.data?.unlockedGateKeys ?? []), ...onboardingGates];
+  // Feature gates are server-authoritative: they open only when the backend reports
+  // the milestone achieved (GET /unlocks). Onboarding never grants access, so editing
+  // localStorage can't unlock a module — see AuthContext for the rationale.
+  const openGates = unlocks.data?.unlockedGateKeys ?? [];
 
   return (
     <div className="flex h-full flex-col gap-5">

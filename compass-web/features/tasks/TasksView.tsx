@@ -28,6 +28,7 @@ export function TasksView() {
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(storageKey);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only localStorage hydration; reading during render would break SSR
       if (raw) setTasks(JSON.parse(raw));
     } catch {
       // ignore
