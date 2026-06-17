@@ -1,19 +1,20 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { deriveUnlocks, type OnboardingAnswers } from "./onboarding";
+import { type OnboardingAnswers } from "./onboarding";
 
 /**
- * Client-side auth placeholder. No backend user model exists yet, so the whole
- * session (account + onboarding state + derived unlocks) lives in localStorage.
- * The surface (login / signup / completeOnboarding / logout) is intentionally
- * shaped so a real auth provider can drop in later without touching consumers.
+ * Client-side auth placeholder. No backend user model exists yet, so the
+ * session (account + onboarding answers) lives in localStorage. The surface
+ * (login / signup / completeOnboarding / logout) is intentionally shaped so a
+ * real auth provider can drop in later without touching consumers.
  *
- * SECURITY: `unlockedGateKeys` is NOT a security boundary. It is rehydrated from
- * localStorage and trusted as-is, so anyone can open any gated module by editing
- * storage in devtools. That is acceptable for this demo stage — the gates are a
- * UX/progress device, not access control. Once auth lands (Iteration 2), unlock
- * state must be derived and enforced server-side per authenticated user.
+ * SECURITY: feature-gate access is NOT decided here. Gated modules open only
+ * when the backend reports the milestone achieved (GET /ventures/{id}/unlocks),
+ * so editing localStorage cannot unlock anything. The onboarding answers we do
+ * persist only drive personalization and the displayed stage label — tampering
+ * with them changes cosmetics, never access. (Issue #5: the previous design
+ * trusted a stored `unlockedGateKeys` list, which was trivially bypassable.)
  */
 
 interface AuthUser {
@@ -24,7 +25,6 @@ interface PersistedState {
   user: AuthUser | null;
   onboardingCompleted: boolean;
   onboarding: OnboardingAnswers | null;
-  unlockedGateKeys: string[];
 }
 
 interface AuthContextValue extends PersistedState {
@@ -42,7 +42,6 @@ const EMPTY: PersistedState = {
   user: null,
   onboardingCompleted: false,
   onboarding: null,
-  unlockedGateKeys: [],
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,9 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   // Hydrate from localStorage once, on the client only — keeps SSR markup stable.
+  // The setState here is intentional and must run in an effect (not a lazy
+  // useState initializer): reading localStorage during render would diverge from
+  // the server-rendered EMPTY state and cause a hydration mismatch.
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only hydration, see above
       if (raw) setState({ ...EMPTY, ...JSON.parse(raw) });
     } catch {
       // corrupt/blocked storage — start fresh
@@ -81,12 +84,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login: (email) => setState((s) => ({ ...s, user: { email } })),
     signup: (email) => setState({ ...EMPTY, user: { email } }),
     completeOnboarding: (answers) => {
-      const { unlockedGateKeys } = deriveUnlocks(answers);
       setState((s) => ({
         ...s,
         onboardingCompleted: true,
         onboarding: answers,
-        unlockedGateKeys,
       }));
     },
     logout: () => setState(EMPTY),

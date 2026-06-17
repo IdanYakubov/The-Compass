@@ -31,6 +31,7 @@ export function JournalView() {
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(storageKey);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only localStorage hydration; reading during render would break SSR
       if (raw) setEntries(JSON.parse(raw));
     } catch {
       // ignore corrupt/blocked storage
@@ -48,6 +49,7 @@ export function JournalView() {
   }, [entries, ready, storageKey]);
 
   // Keep the selected prompt valid if the situation (and prompt list) changes.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting selection when the prompt list changes is the intended sync
   useEffect(() => setPrompt(prompts[0]), [prompts]);
 
   const save = () => {

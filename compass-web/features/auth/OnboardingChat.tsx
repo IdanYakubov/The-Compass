@@ -4,11 +4,7 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
-import {
-  ONBOARDING_QUESTIONS,
-  deriveUnlocks,
-  type OnboardingAnswers,
-} from "./onboarding";
+import { ONBOARDING_QUESTIONS, type OnboardingAnswers } from "./onboarding";
 
 interface ChatLine {
   role: "advisor" | "user";
@@ -17,9 +13,10 @@ interface ChatLine {
 
 /**
  * The mandatory intro conversation. Asks the 3 key questions one at a time, then
- * commits the answers via completeOnboarding — which sets OnboardingCompleted and
- * derives the founder's starting unlocks. Until that call, AppGate keeps the
- * dashboard and The Horizon out of reach.
+ * commits the answers via completeOnboarding, which sets OnboardingCompleted and
+ * tailors the dashboard. Until that call, AppGate keeps the dashboard and The
+ * Horizon out of reach. Feature gates themselves are unlocked by real milestone
+ * progress on the backend, not by onboarding.
  */
 export function OnboardingChat() {
   const { user, completeOnboarding } = useAuth();
@@ -41,9 +38,8 @@ export function OnboardingChat() {
     setStep((s) => s + 1);
   };
 
-  // Once all three are answered we can compute the unlock preview.
+  // Once every question is answered the full set is ready to commit.
   const complete = answers as OnboardingAnswers;
-  const preview = finished ? deriveUnlocks(complete) : null;
 
   return (
     <div className="flex w-full items-center justify-center px-6 py-10">
@@ -84,13 +80,8 @@ export function OnboardingChat() {
           {finished && (
             <div className="max-w-[80%] self-start rounded-2xl rounded-bl-sm bg-secondary px-4 py-2.5 text-sm leading-relaxed">
               Perfect — I&apos;ve set your stage to{" "}
-              <span className="font-semibold text-foreground">{preview?.stage}</span>.
-              {preview && preview.unlockedGateKeys.length > 0 ? (
-                <> Based on your answers I&apos;ve unlocked {preview.unlockedGateKeys.length} early feature
-                {preview.unlockedGateKeys.length > 1 ? "s" : ""} and tailored your daily tasks.</>
-              ) : (
-                <> I&apos;ve lined up the right first milestones and tailored your daily tasks.</>
-              )}
+              <span className="font-semibold text-foreground">{complete.stage}</span>.
+              I&apos;ve lined up the right first milestones and tailored your daily tasks.
             </div>
           )}
         </div>
