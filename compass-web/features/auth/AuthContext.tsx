@@ -8,6 +8,12 @@ import { deriveUnlocks, type OnboardingAnswers } from "./onboarding";
  * session (account + onboarding state + derived unlocks) lives in localStorage.
  * The surface (login / signup / completeOnboarding / logout) is intentionally
  * shaped so a real auth provider can drop in later without touching consumers.
+ *
+ * SECURITY: `unlockedGateKeys` is NOT a security boundary. It is rehydrated from
+ * localStorage and trusted as-is, so anyone can open any gated module by editing
+ * storage in devtools. That is acceptable for this demo stage — the gates are a
+ * UX/progress device, not access control. Once auth lands (Iteration 2), unlock
+ * state must be derived and enforced server-side per authenticated user.
  */
 
 interface AuthUser {

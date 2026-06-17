@@ -25,7 +25,7 @@ export function TopThreePanel({ tasks, onComplete, completing }: Props) {
     <div className="flex flex-col gap-3">
       {tasks.length === 0 && (
         <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-border px-4 text-center text-sm text-muted-foreground">
-          Nothing in the queue — add micro-tasks to your active milestone on The Horizon.
+          You&apos;re all caught up on this milestone — head to The Horizon to mark it achieved.
         </div>
       )}
       {tasks.map((task, i) => (

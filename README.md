@@ -40,6 +40,21 @@ First API run creates `compass.db` and seeds a demo venture
 
 Domain rule violations come back as `409 { title, detail }` — the UI shows `detail` as-is.
 
+## Tests
+
+```powershell
+npm test                       # runs the whole .NET solution's tests
+# or directly:
+dotnet test compass-api/Compass.sln
+```
+
+`compass-api/tests/Compass.Domain.Tests` covers the stage-gate cascade in the
+`Venture` aggregate (a milestone is only achievable when its tasks are done;
+achieving one unlocks dependents and advances the macro stage).
+
+Next.js anonymous telemetry is disabled for the repo via `compass-web/.env`
+(`NEXT_TELEMETRY_DISABLED=1`), so `next dev` won't phone home.
+
 ## Project layout
 
 ```
