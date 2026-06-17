@@ -6,14 +6,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdvisorPanel } from "@/features/advisory/AdvisorPanel";
 import { useAuth } from "@/features/auth/AuthContext";
 import { personalizedFocus } from "@/features/auth/onboarding";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { FocusTimer } from "./FocusTimer";
 import { TopThreePanel } from "./TopThreePanel";
 import { useCompleteTask, useToday, useUnlocks, useVenture } from "./hooks";
 
-/** Future modules surfaced as gated "coming attractions" — stage-gates made visible. */
+/**
+ * Future modules surfaced as gated "coming attractions" — stage-gates made visible.
+ * `built: false` means the module isn't reachable yet (no route/feature). We show
+ * its gate flip to "Coming soon" rather than "Unlocked" so the unlock doesn't imply
+ * a clickable feature that doesn't exist. Flip to `built: true` (and add a route)
+ * once the feature ships — e.g. the Executive Vault lands in Iteration 5.
+ */
 const GATED_MODULES = [
-  { name: "Executive Vault", blurb: "Value proposition, personas, competitors, metrics.", gate: "mvp_shipped", gateLabel: "Ship the MVP" },
+  { name: "Executive Vault", blurb: "Value proposition, personas, competitors, metrics.", gate: "mvp_shipped", gateLabel: "Ship the MVP", built: false },
 ] as const;
 
 /**
@@ -66,10 +73,15 @@ export function DailyDashboard() {
             {Math.round(t.activeMilestoneProgress * 100)}%
           </span>
           <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
-            {t.stage}
+            {/* Prefer the stage the user chose at onboarding so the badge agrees with
+                what the onboarding chat reported; fall back to the backend venture. */}
+            {onboarding?.stage ?? t.stage}
           </Badge>
-          <Link href="/horizon" className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline">
-            The Horizon →
+          <Link
+            href="/horizon"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+          >
+            The Horizon <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </header>
@@ -116,7 +128,7 @@ export function DailyDashboard() {
                     }`}
                   >
                     <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                      {open ? "Unlocked" : "🔒 Locked"}
+                      {open ? (mod.built ? "Unlocked" : "Coming soon") : "🔒 Locked"}
                     </p>
                     <h3 className="font-serif">{mod.name}</h3>
                     <p className="text-xs text-muted-foreground">{mod.blurb}</p>
