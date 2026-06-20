@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdvisorPanel } from "@/features/advisory/AdvisorPanel";
 import { useAuth } from "@/features/auth/AuthContext";
 import { personalizedFocus } from "@/features/auth/onboarding";
+import { TutorialOverlay } from "@/features/tutorial/TutorialOverlay";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FocusTimer } from "./FocusTimer";
 import { TopThreePanel } from "./TopThreePanel";
 import { useCompleteTask, useToday, useUnlocks, useVenture } from "./hooks";
@@ -34,7 +36,8 @@ export function DailyDashboard() {
   const unlocks = useUnlocks(venture.data?.id);
   const completeTask = useCompleteTask(venture.data?.id);
   // Onboarding answers drive personalization + the dashboard's stage label only.
-  const { onboarding } = useAuth();
+  const { onboarding, onboardingCompleted, tutorialCompleted, completeTutorial } = useAuth();
+  const router = useRouter();
 
   if (venture.isLoading || today.isLoading) {
     return <p className="text-sm text-muted-foreground">Aligning your day…</p>;
@@ -56,8 +59,22 @@ export function DailyDashboard() {
   // localStorage can't unlock a module — see AuthContext for the rationale.
   const openGates = unlocks.data?.unlockedGateKeys ?? [];
 
+  // First visit after onboarding: walk the founder through the dashboard, ending
+  // at the Roadmap. Fires once — completeTutorial() persists the "seen" flag.
+  const showTutorial = onboardingCompleted && !tutorialCompleted;
+
   return (
-    <div className="flex h-full flex-col gap-5">
+    <>
+      {showTutorial && (
+        <TutorialOverlay
+          onFinish={() => {
+            completeTutorial();
+            router.push("/horizon");
+          }}
+          onSkip={completeTutorial}
+        />
+      )}
+      <div className="flex h-full flex-col gap-5">
       {/* ---- Slim header strip: date, milestone bearing, stage ---- */}
       <header className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <div>
@@ -81,6 +98,7 @@ export function DailyDashboard() {
           </Badge>
           <Link
             href="/horizon"
+            data-tour="horizon"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
           >
             The Horizon <ArrowRight className="h-3.5 w-3.5" />
@@ -101,8 +119,8 @@ export function DailyDashboard() {
 
         <Tabs defaultValue="today" className="flex min-h-0 flex-col">
           <TabsList className="w-full">
-            <TabsTrigger value="today" className="flex-1">Top 3</TabsTrigger>
-            <TabsTrigger value="focus" className="flex-1">Focus</TabsTrigger>
+            <TabsTrigger value="today" data-tour="top3" className="flex-1">Top 3</TabsTrigger>
+            <TabsTrigger value="focus" data-tour="focus" className="flex-1">Focus</TabsTrigger>
             <TabsTrigger value="unlocks" className="flex-1">Unlocks</TabsTrigger>
           </TabsList>
 
@@ -146,6 +164,7 @@ export function DailyDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
