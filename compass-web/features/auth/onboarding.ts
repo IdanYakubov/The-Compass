@@ -21,6 +21,13 @@ export interface OnboardingAnswers {
   stage: VentureStage;
   obstacle: ObstacleKey;
   goal: GoalKey;
+  /**
+   * Free-text, in the person's own words: their field, what they're building,
+   * and what they want. Optional. This is the raw material a real AI mentor will
+   * use as context later — captured now so the data is ready when the LLM lands.
+   * (Optional in the type for backward-compat with sessions saved before this field.)
+   */
+  about?: string;
 }
 
 export interface OnboardingOption<V extends string = string> {
@@ -28,7 +35,10 @@ export interface OnboardingOption<V extends string = string> {
   label: string;
 }
 
-export interface OnboardingQuestion<K extends keyof OnboardingAnswers = keyof OnboardingAnswers> {
+/** The multiple-choice keys — excludes the free-text `about` field. */
+type ChoiceKey = Exclude<keyof OnboardingAnswers, "about">;
+
+export interface OnboardingQuestion<K extends ChoiceKey = ChoiceKey> {
   id: K;
   prompt: string;
   options: OnboardingOption<OnboardingAnswers[K]>[];
