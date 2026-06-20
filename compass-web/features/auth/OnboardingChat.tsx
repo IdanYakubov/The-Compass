@@ -25,6 +25,14 @@ export function OnboardingChat() {
   const [history, setHistory] = useState<ChatLine[]>([]);
   // Free-text "in your own words" answer, captured after the multiple-choice steps.
   const [about, setAbout] = useState("");
+  // Per-question "write my own answer" mode: lets a custom answer replace the
+  // preset buttons on any question. The structured field still needs a typed
+  // value (stage/situation/etc. drive existing UI), so we keep a sensible
+  // fallback (the question's first option) and stash the actual free text —
+  // it's folded into `about` at the end as extra context for a future AI mentor.
+  const [customMode, setCustomMode] = useState(false);
+  const [customText, setCustomText] = useState("");
+  const [customNotes, setCustomNotes] = useState<string[]>([]);
 
   const finished = step >= ONBOARDING_QUESTIONS.length;
   const question = finished ? null : ONBOARDING_QUESTIONS[step];
@@ -40,9 +48,30 @@ export function OnboardingChat() {
     setStep((s) => s + 1);
   };
 
+  const submitCustom = () => {
+    const trimmed = customText.trim();
+    if (!trimmed) return;
+    const q = ONBOARDING_QUESTIONS[step];
+    setHistory((h) => [
+      ...h,
+      { role: "advisor", text: q.prompt },
+      { role: "user", text: trimmed },
+    ]);
+    // Fall back to the first preset option for the structured field — existing
+    // UI (stage badge, personalization) still needs a typed value — while the
+    // actual free text is preserved in customNotes for the mentor later.
+    setAnswers((a) => ({ ...a, [q.id]: q.options[0].value }));
+    setCustomNotes((n) => [...n, `${q.prompt}: ${trimmed}`]);
+    setCustomText("");
+    setCustomMode(false);
+    setStep((s) => s + 1);
+  };
+
   // Once every question is answered the full set is ready to commit — including
-  // the free-text "about" so a future AI mentor has the person's own words.
-  const complete: OnboardingAnswers = { ...(answers as OnboardingAnswers), about: about.trim() };
+  // any per-question custom answers plus the closing free-text, so a future AI
+  // mentor has the person's own words wherever they gave them.
+  const combinedAbout = [...customNotes, about.trim()].filter(Boolean).join("\n");
+  const complete: OnboardingAnswers = { ...(answers as OnboardingAnswers), about: combinedAbout };
 
   return (
     <div className="flex w-full items-center justify-center px-6 py-10">
@@ -98,7 +127,32 @@ export function OnboardingChat() {
 
         {/* answer options / finish */}
         <footer className="border-t border-border px-5 py-4">
-          {question ? (
+          {question && customMode ? (
+            <div className="flex flex-col gap-3">
+              <textarea
+                autoFocus
+                value={customText}
+                onChange={(e) => setCustomText(e.target.value)}
+                rows={2}
+                placeholder="Type your own answer…"
+                className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60"
+              />
+              <div className="flex justify-between gap-2">
+                <button
+                  onClick={() => {
+                    setCustomMode(false);
+                    setCustomText("");
+                  }}
+                  className="rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Back to choices
+                </button>
+                <Button onClick={submitCustom} disabled={!customText.trim()}>
+                  Continue
+                </Button>
+              </div>
+            </div>
+          ) : question ? (
             <div className="flex flex-wrap gap-2">
               {question.options.map((opt) => (
                 <button
@@ -109,6 +163,12 @@ export function OnboardingChat() {
                   {opt.label}
                 </button>
               ))}
+              <button
+                onClick={() => setCustomMode(true)}
+                className="rounded-full border border-dashed border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+              >
+                ✎ Write my own answer
+              </button>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
