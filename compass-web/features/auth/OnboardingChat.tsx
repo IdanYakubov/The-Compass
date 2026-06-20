@@ -23,6 +23,8 @@ export function OnboardingChat() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<OnboardingAnswers>>({});
   const [history, setHistory] = useState<ChatLine[]>([]);
+  // Free-text "in your own words" answer, captured after the multiple-choice steps.
+  const [about, setAbout] = useState("");
 
   const finished = step >= ONBOARDING_QUESTIONS.length;
   const question = finished ? null : ONBOARDING_QUESTIONS[step];
@@ -38,8 +40,9 @@ export function OnboardingChat() {
     setStep((s) => s + 1);
   };
 
-  // Once every question is answered the full set is ready to commit.
-  const complete = answers as OnboardingAnswers;
+  // Once every question is answered the full set is ready to commit — including
+  // the free-text "about" so a future AI mentor has the person's own words.
+  const complete: OnboardingAnswers = { ...(answers as OnboardingAnswers), about: about.trim() };
 
   return (
     <div className="flex w-full items-center justify-center px-6 py-10">
@@ -78,11 +81,18 @@ export function OnboardingChat() {
           )}
 
           {finished && (
-            <div className="max-w-[80%] self-start rounded-2xl rounded-bl-sm bg-secondary px-4 py-2.5 text-sm leading-relaxed">
-              Perfect — I&apos;ve set your stage to{" "}
-              <span className="font-semibold text-foreground">{complete.stage}</span>.
-              I&apos;ve lined up the right first milestones and tailored your daily tasks.
-            </div>
+            <>
+              <div className="max-w-[80%] self-start rounded-2xl rounded-bl-sm bg-secondary px-4 py-2.5 text-sm leading-relaxed">
+                Perfect — I&apos;ve set your stage to{" "}
+                <span className="font-semibold text-foreground">{complete.stage}</span>.
+                I&apos;ve lined up the right first milestones and tailored your daily tasks.
+              </div>
+              <div className="max-w-[80%] self-start rounded-2xl rounded-bl-sm bg-secondary px-4 py-2.5 text-sm leading-relaxed">
+                Last thing — in your own words, what are you building or working on,
+                and what do you want from me? The more I know, the sharper my advice.
+                <span className="text-muted-foreground"> (Optional — you can skip.)</span>
+              </div>
+            </>
           )}
         </div>
 
@@ -101,9 +111,18 @@ export function OnboardingChat() {
               ))}
             </div>
           ) : (
-            <Button size="lg" className="w-full" onClick={() => completeOnboarding(complete)}>
-              Open my Compass →
-            </Button>
+            <div className="flex flex-col gap-3">
+              <textarea
+                value={about}
+                onChange={(e) => setAbout(e.target.value)}
+                rows={3}
+                placeholder="e.g. I'm a graphic designer going solo — I want to land my first 3 paying clients and stay focused in the mornings."
+                className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60"
+              />
+              <Button size="lg" className="w-full" onClick={() => completeOnboarding(complete)}>
+                Open my Compass →
+              </Button>
+            </div>
           )}
         </footer>
       </div>
