@@ -25,6 +25,8 @@ interface PersistedState {
   user: AuthUser | null;
   onboardingCompleted: boolean;
   onboarding: OnboardingAnswers | null;
+  /** Whether the post-onboarding product tour has been seen/dismissed. */
+  tutorialCompleted: boolean;
 }
 
 interface AuthContextValue extends PersistedState {
@@ -33,6 +35,7 @@ interface AuthContextValue extends PersistedState {
   login: (email: string) => void;
   signup: (email: string) => void;
   completeOnboarding: (answers: OnboardingAnswers) => void;
+  completeTutorial: () => void;
   logout: () => void;
 }
 
@@ -42,6 +45,7 @@ const EMPTY: PersistedState = {
   user: null,
   onboardingCompleted: false,
   onboarding: null,
+  tutorialCompleted: false,
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -90,6 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onboarding: answers,
       }));
     },
+    // Marks the post-onboarding tour as seen so it only ever fires once.
+    completeTutorial: () => setState((s) => ({ ...s, tutorialCompleted: true })),
     logout: () => setState(EMPTY),
   };
 

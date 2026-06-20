@@ -70,7 +70,10 @@ export function AdvisorPanel({ today }: { today: Today }) {
   };
 
   return (
-    <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+    <aside
+      data-tour="advisor"
+      className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card"
+    >
       {/* ---- Contextual header: proof the advisor knows where you are ---- */}
       <header className="border-b border-border px-5 py-4">
         <div className="flex items-center gap-2">
