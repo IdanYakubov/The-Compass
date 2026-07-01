@@ -34,7 +34,7 @@ Thumbs.db
 .idea/
 
 # --- Local-only launcher (machine-specific absolute paths) ---
-Start-Compass.bat
+Start-North.bat
 
 # --- Claude local session data ---
 .claude/

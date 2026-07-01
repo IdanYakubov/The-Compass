@@ -1,5 +1,5 @@
 {
-  "name": "the-compass",
+  "name": "north",
   "version": "1.0.0",
   "description": "An entrepreneurial north star for solo founders: roadmap with stage-gates (**The Horizon**), a Top-3 daily focus dashboard (**Daily Alignment**), an automated advisory engine (**The Advisory Matrix**), and a business-asset vault (**Executive Vault**).",
   "license": "ISC",
@@ -7,6 +7,6 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "dotnet test compass-api/Compass.sln"
+    "test": "dotnet test north-api/North.sln"
   }
 }

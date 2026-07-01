@@ -1,4 +1,4 @@
-# ◈ The Compass
+# ◈ North
 
 An entrepreneurial north star for solo founders: roadmap with stage-gates (**The Horizon**),
 a Top-3 daily focus dashboard (**Daily Alignment**), an automated advisory engine
@@ -18,15 +18,15 @@ Two terminals:
 
 ```powershell
 # 1. API — http://localhost:5080 (Swagger at /swagger)
-cd compass-api
-dotnet run --project src/Compass.Api --launch-profile http
+cd north-api
+dotnet run --project src/North.Api --launch-profile http
 
 # 2. Web — http://localhost:3000
-cd compass-web
+cd north-web
 npm run dev
 ```
 
-First API run creates `compass.db` and seeds a demo venture
+First API run creates `north.db` and seeds a demo venture
 (Validate the problem → Ship the MVP → First 10 active users) so the dashboard is never empty.
 
 ## How the stage-gate system works
@@ -45,25 +45,25 @@ Domain rule violations come back as `409 { title, detail }` — the UI shows `de
 ```powershell
 npm test                       # runs the whole .NET solution's tests
 # or directly:
-dotnet test compass-api/Compass.sln
+dotnet test north-api/North.sln
 ```
 
-`compass-api/tests/Compass.Domain.Tests` covers the stage-gate cascade in the
+`north-api/tests/North.Domain.Tests` covers the stage-gate cascade in the
 `Venture` aggregate (a milestone is only achievable when its tasks are done;
 achieving one unlocks dependents and advances the macro stage).
 
-Next.js anonymous telemetry is disabled for the repo via `compass-web/.env`
+Next.js anonymous telemetry is disabled for the repo via `north-web/.env`
 (`NEXT_TELEMETRY_DISABLED=1`), so `next dev` won't phone home.
 
 ## Project layout
 
 ```
-compass-api/
-  src/Compass.Domain          # Entities + invariants (no dependencies)
-  src/Compass.Application     # Services, DTOs, ports (IVentureRepository, ...)
-  src/Compass.Infrastructure  # EF Core, repositories, dev seeder
-  src/Compass.Api             # Controllers, middleware, DI
-compass-web/
+north-api/
+  src/North.Domain          # Entities + invariants (no dependencies)
+  src/North.Application     # Services, DTOs, ports (IVentureRepository, ...)
+  src/North.Infrastructure  # EF Core, repositories, dev seeder
+  src/North.Api             # Controllers, middleware, DI
+north-web/
   app/                        # Routes (thin) — /, /horizon
   features/<module>/          # Components + hooks per module
   components/ui/              # shadcn/ui primitives
